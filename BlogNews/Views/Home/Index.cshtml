@@ -1,0 +1,145 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Hava Durumu Kısmı -->
+        <div class="col-lg-2 col-2 d-flex align-items-center justify-content-end" style="border-right: 1px solid #ddd;">
+            <div id="weatherResult" style="font-weight: bold;"></div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                            <a class="mb-1 ms-2" asp-controller="Home" asp-action="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-pen" viewBox="0 0 16 16">
+                    <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
+                </svg>
+            </a>
+            }
+
+        </div>
+        <!-- Kategoriler Kısmı -->
+        <div class="col-lg-10 col-10 d-flex align-items-center justify-content-between">
+            @foreach (var category in Model.Categories)
+            {
+                <a asp-controller="News" asp-action="Search" asp-route-searchText="" asp-route-categoryId="@category.Id" class="text-dark flex-grow-1 text-center" style="text-decoration: none; font-size: 16px;">
+                    @category.Name
+                </a>
+
+            }
+        </div>
+    </div>
+    <!-- Haber Slider Kısmı -->
+<div class="row mt-4">
+    <div id="newsCarousel" class="carousel slide col-12" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @for (int i = 0; i < Model.NewsSliderHomeList.Count; i++)
+            {
+                var news = Model.NewsSliderHomeList[i];
+                <div class="carousel-item @(i == 0 ? "active" : "")">
+                    <a href="/News/@news.NewsId" style="text-decoration: none;">
+                        <img src="@news.PhotoPath" class="d-block w-100" alt="@news.Heading" style="max-height: 500px; object-fit: cover;">
+                        <div class="carousel-caption d-none d-md-block" style="background: rgba(0, 0, 0, 0.5); padding: 10px;">
+                            <h5>@news.Heading</h5>
+                            <p>@news.SourceName</p>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#newsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#newsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+        <div class="carousel-indicators">
+            @for (int i = 0; i < Model.NewsSliderHomeList.Count; i++)
+            {
+                <button type="button" data-bs-target="#newsCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @i"></button>
+            }
+        </div>
+    </div>
+</div>
+</div>
+<div class="container mt-5">
+    <h3 class="mb-4"><span id="newsForYouLabel">News For You</span></h3>
+    <div class="row">
+        @foreach (var news in Model.NewsForYouHomeList)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100" style="cursor: pointer; transition: transform 0.5s; background: linear-gradient(to bottom, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.9)); border: none;" onclick="window.location.href='@Url.Action("Index", "News", new { newsId = news.NewsId })'">
+                    @if (!string.IsNullOrEmpty(news.PhotoPath))
+                    {
+                        <img src="~/@news.PhotoPath" class="card-img-top" alt="@news.Heading" style="height: 200px; object-fit: cover; transition: transform 0.5s;">
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size: 1rem; font-weight: 700;">@news.Heading</h5>
+                        <p class="card-text text-muted" style="font-size: 0.875rem;">@news.SourceName</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center" style="background: rgba(255, 255, 255, 0.7);">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-hand-thumbs-up me-1"></i>
+                            <span>@news.LikeNumber</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-hand-thumbs-down me-1"></i>
+                            <span>@news.DislikeNumber</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+   @section Scripts {    
+       <script>
+           
+     
+        $(document).ready(function() {
+            var cityName = '@Model.CityName';
+                var apiKey = 'f1cc183429a7e2afbe6ababfb9c4a9f5'; 
+                var apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey
+                        }&units=metric`;
+
+                $.ajax({
+                    url: apiUrl,
+                    method: 'GET',
+                    success: function(data) {
+                        var weatherDescription = data.weather[0].description;
+                        var temperature = data.main.temp;
+                        $('#weatherResult').html(`${cityName}: ${temperature} °C`);
+                    },
+                    error: function() {
+                       $('#weatherResult').html(`No Info`);
+                    }
+                });
+           
+        });
+    </script>
+    <script>
+        $.ajax({
+            url: '@Url.Action("GetCurrentCulture", "Home")',
+            method: 'GET',
+            success: function (data) {
+                const currentCulture = data.currentCulture;
+                setLabelsBasedOnCulture(currentCulture);
+            },
+            error: function (error) {
+
+            }
+        });
+
+        function setLabelsBasedOnCulture(culture) {
+            if (culture == 'tr') {
+                $('#searchButonLabel').text('Ara');
+                $('#newsForYouLabel').text('Sizin için daha fazlası');
+                $('#searchButtonLayout').attr('placeholder', 'Ara');
+                $('#userWelcomeLabel').text('Hoşgeldin ');
+            }
+        }
+    </script>
+}

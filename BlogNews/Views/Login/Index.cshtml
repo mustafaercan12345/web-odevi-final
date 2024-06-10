@@ -1,0 +1,32 @@
+﻿@using BlogNews.Models.ViewModels
+@model LoginViewModel
+
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4" style="color: #333;">Login</h3>
+                <form asp-action="Login" method="post" asp-controller="Login">
+                    <div class="mb-3">
+                        <label asp-for="LoginEmail" class="form-label">E-Mail</label>
+                        <input asp-for="LoginEmail" class="form-control" />
+                        <span asp-validation-for="LoginEmail" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="LoginPassword" class="form-label">Password</label>
+                        <input asp-for="LoginPassword" class="form-control" />
+                        <span asp-validation-for="LoginPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+                <div class="text-center mt-3">
+                    <p>Don't have an account? <a asp-controller="Login" asp-action="Register">Register</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

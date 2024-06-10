@@ -1,0 +1,74 @@
+﻿
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4" style="color: #343a40;">Manage Your News</h2>
+    <form asp-action="UserInterestSettings" method="post">
+        <div class="form-group">
+            <div class="row" id="categoryContainer">
+                @foreach (var category in Model.Categories)
+                {
+                    <div class="col-md-4 mb-3 category-item">
+                        <div class="form-check p-3 border rounded shadow-sm" style="background-color: #f8f9fa;">
+                            <input type="checkbox" class="form-check-input" id="category_@category.CategoryId" name="SelectedCategoryIds" value="@category.CategoryId" @(category.IsSelected ? "checked" : "") />
+                            <label class="form-check-label ms-2" for="category_@category.CategoryId" style="font-weight: 500;">@category.CategoryName</label>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-success mt-3" style="padding: 10px 20px; font-size: 15px;">Save</button>
+        </div>
+    </form>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            function getColorFromName(name) {
+                var hash = 0;
+                for (var i = 0; i < name.length; i++) {
+                    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                var color = '#';
+                for (var i = 0; i < 3; i++) {
+                    var value = (hash >> (i * 8)) & 0xFF;
+                    color += ('00' + value.toString(16)).substr(-2);
+                }
+                return color;
+            }
+
+            function lightenColor(color, percent) {
+                var num = parseInt(color.slice(1), 16),
+                    amt = Math.round(2.55 * percent),
+                    R = (num >> 16) + amt,
+                    G = (num >> 8 & 0x00FF) + amt,
+                    B = (num & 0x0000FF) + amt;
+                return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1).toUpperCase();
+            }
+
+            $('.category-item .form-check').each(function () {
+                var categoryName = $(this).find('label').text();
+                var baseColor = getColorFromName(categoryName);
+                var gradientColor = lightenColor(baseColor, 40); // Rengi %40 aç
+                $(this).css('background', 'linear-gradient(350deg, ' + baseColor + ', ' + gradientColor + ')');
+                $(this).css('opacity', '0.9');
+            });
+
+            $('form').submit(function () {
+                var selectedCategoryIds = [];
+                $('input[name="SelectedCategoryIds"]:checked').each(function () {
+                    selectedCategoryIds.push($(this).val());
+                });
+
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'SelectedCategoryIds',
+                    value: selectedCategoryIds.join(',')
+                }).appendTo('form');
+            });
+        });
+    </script>
+}

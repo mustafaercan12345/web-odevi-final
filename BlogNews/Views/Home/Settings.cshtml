@@ -1,0 +1,133 @@
+﻿@using BlogNews.Models.ViewModels;
+@model ProfileSettingsViewModel
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="bg-light p-4 rounded shadow-sm">
+                <h2 class="text-center" style="color: #333; font-size: 1.5rem; margin-bottom: 20px;">Profile Settings</h2>
+                <form asp-action="Settings" asp-controller="Home" method="post" enctype="multipart/form-data">
+                    <div class="text-center mb-3">
+                        <img id="currentProfilePicture" src="/@Model.ProfilePicturePath" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                        <div>
+                            <label for="profilePicture" class="form-label" style="font-size: 1rem; color: #555;">Profile Picture</label>
+                        
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div class="col-md-4 col-6">
+                            <label for="languageSetting" class="form-label" style="font-size: 1rem; color: #555;">Upload Picture</label>
+                            <input type="file" class="form-control" id="profilePicture" name="ProfilePicture" onchange="previewProfilePicture(event)">
+                        </div>
+
+                        <div class=" col-md-4 col-6 mb-3">
+                            <label for="languageSetting" class="form-label" style="font-size: 1rem; color: #555;">Language Settings</label>
+                            <select class="form-select" id="languageSetting" name="Language">
+                                @foreach (var language in Model.Languages)
+                                {
+                                    @if (language.Selected)
+                                    {
+                                        <option value="@language.Value" selected>@language.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@language.Value">@language.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 col-6 mb-3">
+                            <label for="notificationSetting" class="form-label" style="font-size: 1rem; color: #555;">Notification Settings</label>
+                            <select class="form-select" id="notificationSetting" name="NotificationEnabled">
+                                @foreach (var option in Model.NotificationOptions)
+                                {
+                                    @if (option.Selected)
+                                    {
+                                        <option value="@option.Value" selected>@option.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@option.Value">@option.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-6 mb-3">
+                            <label for="CountryId" class="form-label" style="font-size: 1rem; color: #555;">Country</label>
+                            <select class="form-select" id="CountryId" name="CountryId">
+                                @foreach (var country in Model.Countries)
+                                {
+                                    @if (country.Selected)
+                                    {
+                                        <option value="@country.Value" selected>@country.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@country.Value">@country.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-6 mb-3">
+                            <label for="CityId" class="form-label" style="font-size: 1rem; color: #555;">City</label>
+                            <select class="form-select" id="CityId" name="CityId">
+                                @foreach (var city in Model.Cities)
+                                {
+                                    @if (city.Value == Model.CityId.ToString())
+                                    {
+                                        <option value="@city.Value" selected>@city.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@city.Value">@city.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary" style="font-size: 1rem; padding: 10px 20px;">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewProfilePicture(event) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            var output = document.getElementById('currentProfilePicture');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+@section Scripts{
+    <script>
+        $(document).ready(function () {
+            $('#CountryId').change(function () {
+                var countryId = $(this).val();
+                if (countryId) {
+                    $.getJSON('/Login/GetCities', { countryId: countryId }, function (data) {
+                        var citySelect = $('#CityId');
+                        citySelect.empty();
+                        $.each(data, function (i, city) {
+                            citySelect.append('<option value="' + city.cityId + '">' + city.cityNameMulti + '</option>');
+                        });
+                    });
+                } else {
+                    $('#CityId').empty();
+                    $('#CityId').append('<option value="">Select a city</option>');
+                }
+            });
+        });
+    </script>
+}
